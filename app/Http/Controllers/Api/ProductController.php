@@ -13,10 +13,34 @@ class ProductController extends Controller
         $products = Product::with('category')
                     ->paginate(5);
 
+        $products->getCollection()->transform(function ($product) {
+
+            return [
+                'id' => $product->id,
+                'nama_produk' => $product->nama_produk,
+                'brand' => $product->brand,
+                'harga' => $product->harga,
+                'stok' => $product->stok,
+                'gambar' => $product->gambar,
+
+                'category' => [
+                    'id' => $product->category->id ?? null,
+                    'nama_kategori' => $product->category->nama_kategori ?? null,
+                ]
+            ];
+        });
+
         return response()->json([
-            'success' => true,
-            'message' => 'Berikut adalah semua daftar produk yang ada.💄',
-            'data' => $products
+            'message' => 'Berikut daftar produk 💄',
+            'data' => $products->items(),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'next_page' => $products->nextPageUrl(),
+                'prev_page' => $products->previousPageUrl(),
+            ]
         ]);
     }
 
@@ -26,15 +50,27 @@ class ProductController extends Controller
 
         if (!$product) {
             return response()->json([
-                'response' => false,
-                'message' => 'Produk tidak ada, coba cari yang lain.😢'
+                'message' => 'Produk tidak ditemukan 😢'
             ], 404);
         }
 
+        $data = [
+            'id' => $product->id,
+            'nama_produk' => $product->nama_produk,
+            'brand' => $product->brand,
+            'harga' => $product->harga,
+            'stok' => $product->stok,
+            'gambar' => $product->gambar,
+
+            'category' => [
+                'id' => $product->category->id ?? null,
+                'nama_kategori' => $product->category->nama_kategori ?? null,
+            ]
+        ];
+
         return response()->json([
-            'success' => true,
-            'message' => 'Berikut adalah detail produk yang dicari ✨',
-            'data' => $product
+            'message' => 'Berikut detail produk ✨',
+            'data' => $data
         ]);
     }
 
@@ -46,40 +82,39 @@ class ProductController extends Controller
 
             if (!$product) {
                 return response()->json([
-                    'response' => false,
-                    'message' => 'Produk tidak ditemukan😢'
+                    'message' => 'Produk tidak ditemukan 😢'
                 ], 404);
             }
 
             $request->validate([
-                'nama_produk' => 'required',
-                'brand'       => 'required',
-                'harga'       => 'required|numeric',
-                'stok'        => 'required|numeric',
-                'gambar'      => 'required',
-                'category_id' => 'required'
+                'nama_produk' => 'sometimes',
+                'brand'       => 'sometimes',
+                'harga'       => 'sometimes|numeric',
+                'stok'        => 'sometimes|numeric',
+                'gambar'      => 'sometimes',
+                'category_id' => 'sometimes'
             ]);
 
-            $product->update([
-                'nama_produk' => $request->nama_produk,
-                'brand'       => $request->brand,
-                'harga'       => $request->harga,
-                'stok'        => $request->stok,
-                'gambar'      => $request->gambar,
-                'category_id' => $request->category_id
-            ]);
+            $product->update(
+                $request->only([
+                    'nama_produk',
+                    'brand',
+                    'harga',
+                    'stok',
+                    'gambar',
+                    'category_id'
+                ])
+            );
 
             return response()->json([
-                'success' => true,
-                'message' => 'Yeay, info produk berhasil diperbarui✨',
-                'data'    => $product
+                'message' => 'Produk berhasil diperbarui 🎉',
+                'data' => $product->load('category')
             ]);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'response' => false,
-                'message' => 'Produk gagal diperbarui😢',
+                'message' => 'Produk gagal diperbarui 😢',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -91,16 +126,14 @@ class ProductController extends Controller
 
         if (!$product) {
             return response()->json([
-                'response' => false,
-                'message' => 'Produk ga ada, mau hapus apa?😒'
+                'message' => 'Produk tidak ditemukan 😢'
             ], 404);
         }
 
         $product->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Yeay, produk berhasil dihapus👋'
+            'message' => 'Produk berhasil dihapus 👋'
         ]);
     }
 }

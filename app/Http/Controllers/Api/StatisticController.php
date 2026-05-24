@@ -7,68 +7,86 @@ use Illuminate\Support\Facades\DB;
 
 class StatisticController extends Controller
 {
-    public function monthlyTransactions()
+
+    public function yearlyStatistics($tahun)
     {
         $data = DB::table('orders')
+            ->whereYear('tanggal', $tahun)
             ->select(
-                DB::raw('MONTH(tanggal) as bulan'),
-                DB::raw('COUNT(*) as total_transaksi')
+                DB::raw('COUNT(*) as total_transaksi'),
+                DB::raw('SUM(total_harga) as total_pendapatan')
             )
-            ->groupBy('bulan')
-            ->paginate(5);
+            ->first();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Ini adalah data transaksi per bulan 📅',
+            'message' => 'Statistik transaksi tahunan 📈',
+            'tahun' => $tahun,
             'data' => $data
         ]);
     }
 
-    public function yearlyTransactions()
+
+    public function monthlyStatistics($tahun, $bulan)
     {
         $data = DB::table('orders')
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
             ->select(
-                DB::raw('YEAR(tanggal) as tahun'),
-                DB::raw('COUNT(*) as total_transaksi')
+                DB::raw('COUNT(*) as total_transaksi'),
+                DB::raw('SUM(total_harga) as total_pendapatan')
             )
-            ->groupBy('tahun')
-            ->paginate(5);
+            ->first();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Ini adalah data transaksi per tahun 📈',
+            'message' => 'Statistik transaksi bulanan 📅',
+            'tahun' => $tahun,
+            'bulan' => $bulan,
             'data' => $data
         ]);
     }
 
-    public function totalIncome()
+
+    public function dailyStatistics($tanggal)
     {
         $data = DB::table('orders')
-            ->select(DB::raw('SUM(total_harga) as total_pendapatan'))
-            ->paginate(5);
+            ->whereDate('tanggal', $tanggal)
+            ->select(
+                DB::raw('COUNT(*) as total_transaksi'),
+                DB::raw('SUM(total_harga) as total_pendapatan')
+            )
+            ->first();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Ini adalah total pendapatan toko kami 💰',
+            'message' => 'Statistik transaksi harian 🛒',
+            'tanggal' => $tanggal,
             'data' => $data
         ]);
     }
+
 
     public function topProducts()
     {
         $data = DB::table('order_details')
             ->join('products', 'order_details.product_id', '=', 'products.id')
             ->select(
+                'products.id',
                 'products.nama_produk',
+                'products.brand',
+                'products.harga',
                 DB::raw('SUM(order_details.qty) as total_terjual')
             )
-            ->groupBy('products.nama_produk')
+            ->groupBy(
+                'products.id',
+                'products.nama_produk',
+                'products.brand',
+                'products.harga'
+            )
             ->orderByDesc('total_terjual')
-            ->paginate(5);
+             ->limit(1)
+            ->get();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Ini adalah produk terlaris kami 🏆',
+            'message' => 'Daftar produk terlaris 🏆',
             'data' => $data
         ]);
     }

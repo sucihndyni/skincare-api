@@ -13,9 +13,16 @@ class CategoryController extends Controller
         $categories = Category::paginate(5);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Berikut ini info kategori produk yang tersedia.🧴',
-            'data' => $categories
+            'message' => 'Berikut ini info kategori produk yang tersedia 🧴',
+            'data' => $categories->items(),
+            'pagination' => [
+                'current_page' => $categories->currentPage(),
+                'last_page' => $categories->lastPage(),
+                'per_page' => $categories->perPage(),
+                'total' => $categories->total(),
+                'next_page' => $categories->nextPageUrl(),
+                'prev_page' => $categories->previousPageUrl(),
+            ]
         ]);
     }
 
@@ -25,14 +32,12 @@ class CategoryController extends Controller
 
         if (!$category) {
             return response()->json([
-                'response' => false,
-                'message' => 'Category tidak ditemukan.⚠️'
+                'message' => 'Category tidak ditemukan 😢'
             ], 404);
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Berikut adalah info Categorinya.😊',
+            'message' => 'Berikut detail category 😊',
             'data' => $category
         ]);
     }
@@ -43,22 +48,22 @@ class CategoryController extends Controller
 
         if (!$category) {
             return response()->json([
-                'response' => false,
-                'message' => 'Category tidak ada, mau ngapain.😒'
+                'message' => 'Category tidak ditemukan 😢'
             ], 404);
         }
 
         $request->validate([
-            'nama_kategori' => 'required'
+            'nama_kategori' => 'sometimes'
         ]);
 
-        $category->update([
-            'nama_kategori' => $request->nama_kategori
-        ]);
+        $category->update(
+            $request->only([
+                'nama_kategori'
+            ])
+        );
 
         return response()->json([
-            'success' => true,
-            'message' => 'Yey, Category berhasil diperbarui.🎉',
+            'message' => 'Category berhasil diperbarui 🎉',
             'data' => $category
         ]);
     }
@@ -69,16 +74,14 @@ class CategoryController extends Controller
 
         if (!$category) {
             return response()->json([
-                'response' => false,
-                'message' => 'Category yang mau dihapus ga ada.😒',
+                'message' => 'Category tidak ditemukan 😢'
             ], 404);
         }
 
         $category->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Yey, Category berhasil dihapus.🙌'
+            'message' => 'Category berhasil dihapus 👋'
         ]);
     }
 }

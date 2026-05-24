@@ -13,9 +13,16 @@ class UserController extends Controller
         $users = User::paginate(5);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Berikut ini adalah daftar user yang tersedia.👥',
-            'data' => $users
+            'message' => 'Berikut daftar user 👥',
+            'data' => $users->items(),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'next_page' => $users->nextPageUrl(),
+                'prev_page' => $users->previousPageUrl(),
+            ]
         ]);
     }
 
@@ -25,14 +32,12 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'response' => false,
-                'message' => 'User itu tidak terdaftar disini.😠'
+                'message' => 'User tidak ditemukan 😢'
             ], 404);
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Berikut ini adalah info tentang user.💻',
+            'message' => 'Berikut detail user 💻',
             'data' => $user
         ]);
     }
@@ -43,24 +48,24 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'response' => false,
-                'message' => 'Apa yang mau diubah, usernya tidak ada.😡'
+                'message' => 'User tidak ditemukan 😢'
             ], 404);
         }
 
         $request->validate([
-            'nama' => 'required',
-            'email' => 'required|email'
+            'nama'  => 'sometimes',
+            'email' => 'sometimes|email'
         ]);
 
-        $user->update([
-            'nama' => $request->nama,
-            'email' => $request->email
-        ]);
+        $user->update(
+            $request->only([
+                'nama',
+                'email'
+            ])
+        );
 
         return response()->json([
-            'success' => true,
-            'message' => 'Yeay, info user berhasil diperbarui✨',
+            'message' => 'User berhasil diperbarui 🎉',
             'data' => $user
         ]);
     }
@@ -71,16 +76,14 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'response' => false,
-                'message' => 'User ga ada, mau hapus apa?😒'
+                'message' => 'User tidak ditemukan 😢'
             ], 404);
         }
 
         $user->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Yeay, user berhasil dihapus.🎉'
+            'message' => 'User berhasil dihapus 👋'
         ]);
     }
 }
