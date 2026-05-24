@@ -14,6 +14,10 @@ class Order extends Model
         'total_harga'
     ];
 
+    protected $attributes = [
+        'total_harga' => 0
+    ];
+
     public $timestamps = false;
 
     public function user()

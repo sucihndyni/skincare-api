@@ -15,7 +15,7 @@ class StatisticController extends Controller
                 DB::raw('COUNT(*) as total_transaksi')
             )
             ->groupBy('bulan')
-            ->get();
+            ->paginate(5);
 
         return response()->json([
             'success' => true,
@@ -32,7 +32,7 @@ class StatisticController extends Controller
                 DB::raw('COUNT(*) as total_transaksi')
             )
             ->groupBy('tahun')
-            ->get();
+            ->paginate(5);
 
         return response()->json([
             'success' => true,
@@ -43,13 +43,14 @@ class StatisticController extends Controller
 
     public function totalIncome()
     {
-        $total = DB::table('orders')
-            ->sum('total_harga');
+        $data = DB::table('orders')
+            ->select(DB::raw('SUM(total_harga) as total_pendapatan'))
+            ->paginate(5);
 
         return response()->json([
             'success' => true,
             'message' => 'Ini adalah total pendapatan toko kami 💰',
-            'total_pendapatan' => $total
+            'data' => $data
         ]);
     }
 
@@ -63,8 +64,7 @@ class StatisticController extends Controller
             )
             ->groupBy('products.nama_produk')
             ->orderByDesc('total_terjual')
-            ->limit(1)
-            ->get();
+            ->paginate(5);
 
         return response()->json([
             'success' => true,

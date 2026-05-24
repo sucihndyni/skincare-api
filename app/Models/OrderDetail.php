@@ -15,6 +15,10 @@ class OrderDetail extends Model
         'subtotal'
     ];
 
+    protected $attributes = [
+        'subtotal' => 0
+    ];
+
     public $timestamps = false;
 
     public function order()

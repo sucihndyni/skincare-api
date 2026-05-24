@@ -10,11 +10,12 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->get();
+        $products = Product::with('category')
+                    ->paginate(5);
 
         return response()->json([
             'success' => true,
-            'message' => 'Berikut adalah semua daftar produk yan ada.💄',
+            'message' => 'Berikut adalah semua daftar produk yang ada.💄',
             'data' => $products
         ]);
     }
@@ -40,12 +41,13 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         try {
+
             $product = Product::find($id);
 
             if (!$product) {
                 return response()->json([
                     'response' => false,
-                    'message' => 'Produk tidak ditemukan, mau ubah apa?😢'
+                    'message' => 'Produk tidak ditemukan😢'
                 ], 404);
             }
 
@@ -74,10 +76,11 @@ class ProductController extends Controller
             ]);
 
         } catch (\Exception $e) {
+
             return response()->json([
                 'response' => false,
-                'message' => 'Produk gagal diperbarui.😢',
-                'error'    => $e->getMessage()
+                'message' => 'Produk gagal diperbarui😢',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

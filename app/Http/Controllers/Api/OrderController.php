@@ -10,7 +10,8 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with(['user', 'details.product'])->get();
+        $orders = Order::with(['user', 'details.product'])
+                    ->paginate(5);
 
         return response()->json([
             'success' => true,
@@ -38,37 +39,36 @@ class OrderController extends Controller
     }
 
     public function store(Request $request)
-{
-    try {
+    {
+        try {
 
-        $request->validate([
-            'user_id' => 'required',
-            'tanggal' => 'required',
-            'total_harga' => 'required|numeric'
-        ]);
+            $request->validate([
+                'user_id' => 'required',
+                'tanggal' => 'required'
+            ]);
 
-        $order = Order::create([
-            'user_id' => $request->user_id,
-            'tanggal' => $request->tanggal,
-            'total_harga' => $request->total_harga
-        ]);
+            $order = Order::create([
+                'user_id' => $request->user_id,
+                'tanggal' => $request->tanggal,
+                'total_harga' => 0
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Yey, order baru berhasil ditambahkan.🎉',
-            'data' => $order
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Yey, order baru berhasil ditambahkan.🎉',
+                'data' => $order
+            ], 201);
 
-    } catch (\Exception $e) {
+        } catch (\Exception $e) {
 
-        return response()->json([
-            'response' => false,
-            'message' => 'Gagal menambahkan order.😢',
-            'error' => $e->getMessage()
-        ], 500);
+            return response()->json([
+                'response' => false,
+                'message' => 'Gagal menambahkan order.😢',
+                'error' => $e->getMessage()
+            ], 500);
 
+        }
     }
-}
 
     public function destroy($id)
     {

@@ -5,19 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\OrderDetail;
+use App\Models\Product;
+use App\Models\Order;
 
 class OrderDetailController extends Controller
 {
     public function index()
     {
-        $details = OrderDetail::with(['order', 'product'])->get();
+        $details = OrderDetail::with(['order', 'product'])
+                    ->paginate(5);
 
         return response()->json([
             'success' => true,
             'message' => 'Berikut adalah semua detail order yang ada.📋',
             'data' => $details
         ]);
-    }   
+    }
 
     public function show($id)
     {
@@ -36,7 +39,7 @@ class OrderDetailController extends Controller
             'data' => $detail
         ]);
     }
-    
+
     public function store(Request $request)
     {
         try {
@@ -44,16 +47,34 @@ class OrderDetailController extends Controller
             $request->validate([
                 'order_id' => 'required',
                 'product_id' => 'required',
-                'qty' => 'required|numeric',
-                'subtotal' => 'required|numeric'
+                'qty' => 'required|numeric'
             ]);
+
+            $product = Product::find($request->product_id);
+
+            if (!$product) {
+                return response()->json([
+                    'response' => false,
+                    'message' => 'Produk tidak ditemukan😢'
+                ], 404);
+            }
+
+            $subtotal = $product->harga * $request->qty;
 
             $detail = OrderDetail::create([
                 'order_id' => $request->order_id,
                 'product_id' => $request->product_id,
                 'qty' => $request->qty,
-                'subtotal' => $request->subtotal
+                'subtotal' => $subtotal
             ]);
+
+            $total = OrderDetail::where('order_id', $request->order_id)
+                        ->sum('subtotal');
+
+            Order::where('id', $request->order_id)
+                ->update([
+                    'total_harga' => $total
+                ]);
 
             return response()->json([
                 'success' => true,
@@ -85,12 +106,21 @@ class OrderDetailController extends Controller
             ], 404);
         }
 
+        $orderId = $detail->order_id;
+
         $detail->delete();
+
+        $total = OrderDetail::where('order_id', $orderId)
+                    ->sum('subtotal');
+
+        Order::where('id', $orderId)
+            ->update([
+                'total_harga' => $total
+            ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Yeay, item berhasil dihapus dari transaksi.👋'
         ]);
     }
-
 }
