@@ -80,4 +80,26 @@ class AuthController extends Controller
             'refresh_expires_in' => $refreshTtl,
         ]);
     }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return response()->json(['message' => 'Authorization header diperlukan'], 401);
+        }
+
+        $admin = Admin::where('token', $token)->first();
+        if (!$admin) {
+            return response()->json(['message' => 'Token tidak valid'], 401);
+        }
+
+        $admin->token = null;
+        $admin->token_created_at = null;
+        $admin->refresh_token = null;
+        $admin->refresh_token_created_at = null;
+        $admin->save();
+
+        return response()->json(['message' => 'Logout berhasil']);
+    }
 }
