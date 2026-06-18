@@ -11,7 +11,9 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'tanggal',
-        'total_harga'
+        'total_harga',
+        'payment'
+        
     ];
 
     protected $attributes = [

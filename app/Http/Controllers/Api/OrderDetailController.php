@@ -16,7 +16,7 @@ class OrderDetailController extends Controller
 
             $request->validate([
                 'product_id' => 'required',
-                'qty' => 'required|numeric|min:1'
+                'qty' => 'required|numeric|min:1',
             ]);
 
             $product = Product::find($request->product_id);
@@ -33,7 +33,7 @@ class OrderDetailController extends Controller
                 'order_id' => $id,
                 'product_id' => $request->product_id,
                 'qty' => $request->qty,
-                'subtotal' => $subtotal
+                'subtotal' => $subtotal,
             ]);
 
             $total = OrderDetail::where('order_id', $id)

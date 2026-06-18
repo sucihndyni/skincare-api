@@ -12,7 +12,8 @@ class OrderDetail extends Model
         'order_id',
         'product_id',
         'qty',
-        'subtotal'
+        'subtotal',
+        'payment'
     ];
 
     protected $attributes = [

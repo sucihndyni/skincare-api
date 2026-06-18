@@ -7,6 +7,40 @@ use Illuminate\Support\Facades\DB;
 
 class StatisticController extends Controller
 {
+    public function index()
+    {
+        $orderStats = DB::table('orders')
+            ->select(
+                DB::raw('COUNT(*) as total_orders'),
+                DB::raw('SUM(total_harga) as revenue')
+            )
+            ->first();
+
+        $totalSales = DB::table('order_details')->sum('qty') ?: 0;
+        $totalProducts = DB::table('products')->count();
+        $topProducts = DB::table('order_details')
+            ->join('products', 'order_details.product_id', '=', 'products.id')
+            ->select(
+                'products.nama_produk',
+                DB::raw('SUM(order_details.qty) as terjual')
+            )
+            ->groupBy('products.id', 'products.nama_produk')
+            ->orderByDesc('terjual')
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data statistik berhasil diambil',
+            'data' => [
+                'revenue'        => (int) ($orderStats->revenue ?? 0),
+                'total_orders'   => (int) ($orderStats->total_orders ?? 0),
+                'total_sales'    => (int) $totalSales,
+                'total_products' => (int) $totalProducts,
+                'top_products'   => $topProducts
+            ]
+        ]);
+    }
 
     public function yearlyStatistics($tahun)
     {
@@ -24,7 +58,6 @@ class StatisticController extends Controller
             'data' => $data
         ]);
     }
-
 
     public function monthlyStatistics($tahun, $bulan)
     {
@@ -45,7 +78,6 @@ class StatisticController extends Controller
         ]);
     }
 
-
     public function dailyStatistics($tanggal)
     {
         $data = DB::table('orders')
@@ -63,7 +95,6 @@ class StatisticController extends Controller
         ]);
     }
 
-
     public function topProducts()
     {
         $data = DB::table('order_details')
@@ -75,14 +106,9 @@ class StatisticController extends Controller
                 'products.harga',
                 DB::raw('SUM(order_details.qty) as total_terjual')
             )
-            ->groupBy(
-                'products.id',
-                'products.nama_produk',
-                'products.brand',
-                'products.harga'
-            )
+            ->groupBy('products.id', 'products.nama_produk', 'products.brand', 'products.harga')
             ->orderByDesc('total_terjual')
-             ->limit(1)
+            ->limit(5)
             ->get();
 
         return response()->json([

@@ -11,11 +11,20 @@ class Admin extends Model
         'email',
         'password',
         'role',
-        'token'
+        'token',
+        'token_created_at',
+        'refresh_token',
+        'refresh_token_created_at'
     ];
 
     protected $hidden = [
         'password',
-        'token'
+        'token',
+        'refresh_token'
+    ];
+
+    protected $casts = [
+        'token_created_at' => 'datetime',
+        'refresh_token_created_at' => 'datetime',
     ];
 }

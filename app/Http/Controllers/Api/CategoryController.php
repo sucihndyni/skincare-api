@@ -41,31 +41,38 @@ class CategoryController extends Controller
             'data' => $category
         ]);
     }
-
     public function update(Request $request, $id)
     {
-        $category = Category::find($id);
+        try {
+            $category = Category::find($id);
 
-        if (!$category) {
+            if (!$category) {
+                return response()->json([
+                    'message' => 'Category tidak ditemukan 😢'
+                ], 404);
+            }
+
+            $request->validate([
+                'nama_kategori' => 'sometimes'
+            ]);
+
+            $category->update(
+                $request->only([
+                    'nama_kategori'
+                ])
+            );
+
             return response()->json([
-                'message' => 'Category tidak ditemukan 😢'
-            ], 404);
+                'message' => 'Category berhasil diperbarui 🎉',
+                'data' => $category
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Category gagal diperbarui 😢',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $request->validate([
-            'nama_kategori' => 'sometimes'
-        ]);
-
-        $category->update(
-            $request->only([
-                'nama_kategori'
-            ])
-        );
-
-        return response()->json([
-            'message' => 'Category berhasil diperbarui 🎉',
-            'data' => $category
-        ]);
     }
 
     public function destroy($id)

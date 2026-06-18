@@ -11,7 +11,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('category')
-                    ->paginate(5);
+                    ->paginate(10);
 
         $products->getCollection()->transform(function ($product) {
 

@@ -11,24 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admins', function (Blueprint $table) {
+        if (! Schema::hasTable('admins')) {
+            Schema::create('admins', function (Blueprint $table) {
 
-            $table->id();
+                $table->id();
 
-            $table->string('username')->unique();
+                $table->string('username')->unique();
 
-            $table->string('email')->unique();
+                $table->string('email')->unique();
 
-            $table->string('password');
+                $table->string('password');
 
-            $table->enum('role', ['admin', 'staff'])
-                  ->default('staff');
+                $table->enum('role', ['admin', 'staff'])
+                      ->default('staff');
 
-            $table->string('token')->nullable();
+                $table->string('token')->nullable();
 
-            $table->timestamps();
+                $table->timestamps();
 
-        });
+            });
+        }
     }
 
     /**
