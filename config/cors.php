@@ -4,7 +4,7 @@ return [
     'paths' => ['api/*', 'login', 'refresh', 'logout'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
-        'https://frontend-skincare-nqns.vercel.app',
+        'https://frontend-skincare-nqns-git-main-sucihndynis-projects.vercel.app',
         'http://localhost:5173',
     ],
     'allowed_origins_patterns' => [],
