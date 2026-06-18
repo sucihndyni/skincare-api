@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'login', 'refresh', 'logout'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
         'https://frontend-skincare-nqns.vercel.app',
